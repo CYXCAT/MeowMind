@@ -1,8 +1,12 @@
 // 根据环境加载环境变量
-if (process.env.NODE_ENV === 'production') {
-  require('dotenv').config();
-} else {
-  require('dotenv').config({ path: '../.env' });
+try {
+  if (process.env.NODE_ENV === 'production') {
+    require('dotenv').config();
+  } else {
+    require('dotenv').config({ path: '../.env' });
+  }
+} catch (error) {
+  console.warn('⚠️ 环境变量加载失败:', error.message);
 }
 
 const express = require('express');
@@ -10,8 +14,26 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 
-const askRoutes = require('./routes/ask');
-const historyRoutes = require('./routes/history');
+// 安全地加载路由和服务
+let askRoutes, historyRoutes;
+
+try {
+  askRoutes = require('./routes/ask');
+  historyRoutes = require('./routes/history');
+} catch (error) {
+  console.error('❌ 路由加载失败:', error.message);
+  // 创建简单的错误路由
+  askRoutes = express.Router();
+  historyRoutes = express.Router();
+  
+  askRoutes.post('/', (req, res) => {
+    res.status(500).json({ error: '路由加载失败', message: error.message });
+  });
+  
+  historyRoutes.get('/', (req, res) => {
+    res.status(500).json({ error: '路由加载失败', message: error.message });
+  });
+}
 
 const app = express();
 
@@ -29,6 +51,21 @@ app.use(cors({
 app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// 根路径响应
+app.get('/', (req, res) => {
+  res.json({
+    message: 'MeowMind API 服务器',
+    status: 'running',
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/api/health',
+      ask: '/api/ask',
+      history: '/api/history'
+    }
+  });
+});
 
 // API 路由
 app.use('/api/ask', askRoutes);
