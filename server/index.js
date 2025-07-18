@@ -15,7 +15,6 @@ const askRoutes = require('./routes/ask');
 const historyRoutes = require('./routes/history');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
 
 // 中间件
 app.use(helmet({
@@ -24,9 +23,7 @@ app.use(helmet({
 
 // CORS 配置
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? true  // 生产环境允许所有来源，Vercel 会自动处理
-    : true,
+  origin: true, // 允许所有来源
   credentials: true
 }));
 
@@ -88,7 +85,8 @@ if (process.env.NODE_ENV === 'production') {
           health: '/api/health',
           ask: '/api/ask',
           history: '/api/history'
-        }
+        },
+        environment: process.env.NODE_ENV || 'development'
       });
     });
   }
@@ -112,8 +110,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 开发环境启动服务器
+// 只在开发环境启动服务器
 if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 3001;
   app.listen(PORT, () => {
     console.log(`🐾 MeowMind 服务器启动成功！`);
     console.log(`📍 服务器地址: http://localhost:${PORT}`);
