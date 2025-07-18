@@ -1,4 +1,10 @@
-require('dotenv').config({ path: '../.env' });
+// 根据环境加载环境变量
+if (process.env.NODE_ENV === 'production') {
+  require('dotenv').config();
+} else {
+  require('dotenv').config({ path: '../.env' });
+}
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -12,13 +18,18 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // 中间件
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false, // 在 Vercel 中可能需要禁用
+}));
+
+// CORS 配置
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-domain.vercel.app', 'https://your-domain.vercel.app'] 
+    ? true  // 生产环境允许所有来源，Vercel 会自动处理
     : true,
   credentials: true
 }));
+
 app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -33,24 +44,62 @@ app.get('/api/health', (req, res) => {
     status: 'ok', 
     message: 'MeowMind 服务器运行正常 🐱',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    url: req.url,
+    method: req.method
   });
 });
 
 // 生产环境：服务静态文件
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
+  // 尝试多个可能的静态文件路径
+  const staticPaths = [
+    path.join(__dirname, '../client/build'),
+    path.join(__dirname, '../../client/build'),
+    path.join(__dirname, 'client/build'),
+    path.join(__dirname, '../build')
+  ];
   
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
-  });
+  let staticPath = null;
+  for (const p of staticPaths) {
+    try {
+      require('fs').accessSync(p);
+      staticPath = p;
+      break;
+    } catch (e) {
+      // 路径不存在，继续尝试下一个
+    }
+  }
+  
+  if (staticPath) {
+    console.log('📁 使用静态文件路径:', staticPath);
+    app.use(express.static(staticPath));
+    
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(staticPath, 'index.html'));
+    });
+  } else {
+    console.log('⚠️ 未找到静态文件，返回 API 信息');
+    app.get('*', (req, res) => {
+      res.json({
+        message: 'MeowMind API 服务器',
+        status: 'running',
+        endpoints: {
+          health: '/api/health',
+          ask: '/api/ask',
+          history: '/api/history'
+        }
+      });
+    });
+  }
 }
 
 // 404 处理
 app.use('*', (req, res) => {
   res.status(404).json({ 
     error: '喵呜... 找不到这个页面 😿',
-    path: req.originalUrl 
+    path: req.originalUrl,
+    method: req.method
   });
 });
 
