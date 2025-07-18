@@ -19,8 +19,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "vercel-build": "react-scripts build"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
@@ -44,5 +43,6 @@
     "tailwindcss": "^3.3.0",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.24"
-  }
+  },
+  "proxy": "http://localhost:3001"
 } 

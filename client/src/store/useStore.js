@@ -1,17 +1,7 @@
 import { create } from 'zustand';
 import axios from 'axios';
 
-// 根据环境设置 API 基础 URL
-const getApiBaseUrl = () => {
-  if (process.env.NODE_ENV === 'production') {
-    // 生产环境：使用相对路径，让 Vercel 处理路由
-    return '';
-  }
-  // 开发环境：使用环境变量或默认值
-  return process.env.REACT_APP_API_URL || 'http://localhost:3001';
-};
-
-const API_BASE_URL = getApiBaseUrl();
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
 const useStore = create((set, get) => ({
   // 状态
@@ -33,11 +23,7 @@ const useStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     
     try {
-      const url = process.env.NODE_ENV === 'production' 
-        ? '/api/ask' 
-        : `${API_BASE_URL}/ask`;
-        
-      const response = await axios.post(url, {
+      const response = await axios.post(`${API_BASE_URL}/ask`, {
         question,
         catStyle: get().catStyle
       });
@@ -66,11 +52,7 @@ const useStore = create((set, get) => ({
   // 获取历史记录
   fetchHistory: async () => {
     try {
-      const url = process.env.NODE_ENV === 'production' 
-        ? '/api/history' 
-        : `${API_BASE_URL}/history`;
-        
-      const response = await axios.get(url);
+      const response = await axios.get(`${API_BASE_URL}/history`);
       // 后端返回的数据结构是 { success: true, data: [...], pagination: {...} }
       const questions = response.data.data || response.data || [];
       set({ questions });
