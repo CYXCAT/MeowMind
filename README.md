@@ -26,7 +26,7 @@ npm run install:all
 ### 3. 配置环境变量
 ```bash
 cp env.example .env
-# 编辑 .env 文件，填入你的 Supabase 和 OpenRouter API 密钥
+# 编辑 .env 文件，填入你的 Supabase 和 SiliconFlow API 密钥
 ```
 
 ### 4. 启动开发服务器
@@ -42,8 +42,8 @@ npm run dev
 - **前端**: React + Tailwind CSS + Zustand
 - **后端**: Express + Node.js
 - **数据库**: Supabase (PostgreSQL)
-- **AI服务**: OpenRouter API
-- **部署**: Vercel + Supabase
+- **AI服务**: SiliconFlow API
+- **部署**: 目前为本地部署
 
 ## 📁 项目结构
 
@@ -63,14 +63,12 @@ meowmind/
 - 😺 优雅温柔
 - 😼 高冷傲娇
 
-## 📝 开发说明
-
-详细的产品需求文档请查看 `PRD.txt`
-
 ## 🤝 贡献
 
 欢迎提交 Issue 和 Pull Request！
 
-## �� 许可证
+## 📄 许可证
 
-MIT License 
+本项目采用 [MIT License](LICENSE) 许可证。
+
+Copyright (c) 2025 CYXCAT 

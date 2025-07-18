@@ -71,4 +71,9 @@ yarn-error.log*
 *.swo
 
 # 操作系统
-Thumbs.db 
+Thumbs.db
+
+# 项目文档
+PRD.txt
+PRD.md
+*.prd 
