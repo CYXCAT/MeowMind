@@ -9,7 +9,6 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const path = require('path');
 
 const askRoutes = require('./routes/ask');
 const historyRoutes = require('./routes/history');
@@ -46,51 +45,6 @@ app.get('/api/health', (req, res) => {
     method: req.method
   });
 });
-
-// 生产环境：服务静态文件
-if (process.env.NODE_ENV === 'production') {
-  // 尝试多个可能的静态文件路径
-  const staticPaths = [
-    path.join(__dirname, '../client/build'),
-    path.join(__dirname, '../../client/build'),
-    path.join(__dirname, 'client/build'),
-    path.join(__dirname, '../build')
-  ];
-  
-  let staticPath = null;
-  for (const p of staticPaths) {
-    try {
-      require('fs').accessSync(p);
-      staticPath = p;
-      break;
-    } catch (e) {
-      // 路径不存在，继续尝试下一个
-    }
-  }
-  
-  if (staticPath) {
-    console.log('📁 使用静态文件路径:', staticPath);
-    app.use(express.static(staticPath));
-    
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(staticPath, 'index.html'));
-    });
-  } else {
-    console.log('⚠️ 未找到静态文件，返回 API 信息');
-    app.get('*', (req, res) => {
-      res.json({
-        message: 'MeowMind API 服务器',
-        status: 'running',
-        endpoints: {
-          health: '/api/health',
-          ask: '/api/ask',
-          history: '/api/history'
-        },
-        environment: process.env.NODE_ENV || 'development'
-      });
-    });
-  }
-}
 
 // 404 处理
 app.use('*', (req, res) => {
